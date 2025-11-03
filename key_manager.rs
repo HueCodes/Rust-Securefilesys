@@ -1,14 +1,22 @@
-use aes_gcm::aead::KeyInit;
-use aes_gcm::Aes256Gcm;
-use rand_chacha::ChaCha20Rng;
-use rand_core::{RngCore, SeedableRng};
+use chacha20poly1305::{XChaCha20Poly1305, KeyInit};
+use rand_core::OsRng;
+use rand_core::RngCore;
 use std::{fs, path::Path};
 use anyhow::Result;
+use zeroize::Zeroize;
+use std::io::Write;
+use std::fs::OpenOptions;
 
 /// Handles key generation and persistence.
-/// In production: use a hardware key store or OS keyring.
+/// In production: prefer a hardware key store or OS keyring.
 pub struct KeyManager {
     pub key_bytes: [u8; 32],
+}
+
+impl Drop for KeyManager {
+    fn drop(&mut self) {
+        self.key_bytes.zeroize();
+    }
 }
 
 impl KeyManager {
@@ -20,17 +28,32 @@ impl KeyManager {
             arr.copy_from_slice(&data[..32]);
             arr
         } else {
-            let mut rng = ChaCha20Rng::from_entropy();
             let mut key = [0u8; 32];
-            rng.fill_bytes(&mut key);
-            fs::write(path, &key)?;
+            OsRng.fill_bytes(&mut key);
+
+            // Write with restrictive permissions where possible
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::OpenOptionsExt;
+                let mut f = OpenOptions::new()
+                    .write(true)
+                    .create_new(true)
+                    .mode(0o600)
+                    .open(path)?;
+                f.write_all(&key)?;
+            }
+            #[cfg(not(unix))]
+            {
+                fs::write(path, &key)?;
+            }
+
             key
         };
 
         Ok(Self { key_bytes })
     }
 
-    pub fn cipher(&self) -> Aes256Gcm {
-        Aes256Gcm::new_from_slice(&self.key_bytes).expect("valid key")
+    pub fn cipher(&self) -> XChaCha20Poly1305 {
+        XChaCha20Poly1305::new_from_slice(&self.key_bytes).expect("valid key")
     }
 }

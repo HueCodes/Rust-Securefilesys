@@ -1,5 +1,6 @@
-use crate::crypto::{encryptor::Encryptor, key_manager::KeyManager};
-use crate::storage::metadata::FileMetadata;
+use crate::encryptor::Encryptor;
+use crate::key_manager::KeyManager;
+use crate::metadata::FileMetadata;
 use anyhow::{Context, Result};
 use tokio::fs;
 use std::path::PathBuf;
@@ -20,7 +21,7 @@ impl SecureFileOps {
     pub async fn write_encrypted(&self, name: &str, data: &[u8]) -> Result<()> {
         fs::create_dir_all(&self.root).await?;
         let path = self.root.join(name);
-        let enc = self.encryptor.encrypt(data)?;
+    let enc = self.encryptor.encrypt(data, None)?;
         fs::write(&path, &enc).await?;
         FileMetadata::record(&path, data.len() as u64).await?;
         Ok(())
@@ -30,6 +31,6 @@ impl SecureFileOps {
         let path = self.root.join(name);
         let data = fs::read(&path).await
             .with_context(|| format!("reading {:?}", &path))?;
-        self.encryptor.decrypt(&data)
+    self.encryptor.decrypt(&data, None)
     }
 }

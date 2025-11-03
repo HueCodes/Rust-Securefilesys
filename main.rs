@@ -1,11 +1,13 @@
 mod config;
-mod crypto;
-mod storage;
+mod encryptor;
+mod key_manager;
+mod storagefile_ops;
+mod metadata;
 mod util;
 
 use anyhow::Result;
-use crypto::key_manager::KeyManager;
-use storage::file_ops::SecureFileOps;
+use key_manager::KeyManager;
+use storagefile_ops::SecureFileOps;
 
 #[tokio::main]
 async fn main() -> Result<()> {
