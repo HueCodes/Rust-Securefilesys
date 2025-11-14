@@ -1,7 +1,7 @@
-use serde::{Serialize, Deserialize};
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
 use std::path::Path;
 use tokio::fs;
-use anyhow::Result;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileMetadata {

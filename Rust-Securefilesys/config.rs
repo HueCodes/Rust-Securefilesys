@@ -1,6 +1,6 @@
+use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
-use anyhow::{Context, Result};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -10,8 +10,8 @@ pub struct Config {
 
 impl Config {
     pub fn load(path: &str) -> Result<Self> {
-        let s = fs::read_to_string(path)
-            .with_context(|| format!("reading config file {}", path))?;
+        let s =
+            fs::read_to_string(path).with_context(|| format!("reading config file {}", path))?;
         Ok(serde_json::from_str(&s)?)
     }
 }

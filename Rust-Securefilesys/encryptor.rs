@@ -2,7 +2,7 @@ use anyhow::Result;
 use chacha20poly1305::aead::{Aead, AeadCore, OsRng, Payload};
 use chacha20poly1305::XChaCha20Poly1305;
 use chacha20poly1305::XNonce;
-use flate2::write::{GzEncoder, GzDecoder};
+use flate2::write::{GzDecoder, GzEncoder};
 use flate2::Compression;
 use std::io::Write;
 
@@ -24,9 +24,20 @@ impl Encryptor {
     pub fn encrypt(&self, plaintext: &[u8], aad: Option<&[u8]>) -> Result<Vec<u8>> {
         let nonce = XChaCha20Poly1305::generate_nonce(&mut OsRng); // 24-byte
         let ct = match aad {
-            Some(a) => self.cipher.encrypt(&nonce, Payload { msg: plaintext, aad: a })
+            Some(a) => self
+                .cipher
+                .encrypt(
+                    &nonce,
+                    Payload {
+                        msg: plaintext,
+                        aad: a,
+                    },
+                )
                 .map_err(|e| anyhow::anyhow!(e))?,
-            None => self.cipher.encrypt(&nonce, plaintext).map_err(|e| anyhow::anyhow!(e))?,
+            None => self
+                .cipher
+                .encrypt(&nonce, plaintext)
+                .map_err(|e| anyhow::anyhow!(e))?,
         };
         let mut out = nonce.to_vec();
         out.extend_from_slice(&ct);
@@ -35,13 +46,18 @@ impl Encryptor {
 
     /// Decrypts a buffer produced by `encrypt`. Expects the first 24 bytes to be the nonce.
     pub fn decrypt(&self, ciphertext: &[u8], aad: Option<&[u8]>) -> Result<Vec<u8>> {
-    let (nonce_bytes, data) = ciphertext.split_at(24);
-    #[allow(deprecated)]
-    let nonce = XNonce::from_slice(nonce_bytes);
+        let (nonce_bytes, data) = ciphertext.split_at(24);
+        #[allow(deprecated)]
+        let nonce = XNonce::from_slice(nonce_bytes);
         let pt = match aad {
-            Some(a) => self.cipher.decrypt(nonce, Payload { msg: data, aad: a })
+            Some(a) => self
+                .cipher
+                .decrypt(nonce, Payload { msg: data, aad: a })
                 .map_err(|e| anyhow::anyhow!(e))?,
-            None => self.cipher.decrypt(nonce, data).map_err(|e| anyhow::anyhow!(e))?,
+            None => self
+                .cipher
+                .decrypt(nonce, data)
+                .map_err(|e| anyhow::anyhow!(e))?,
         };
         Ok(pt)
     }

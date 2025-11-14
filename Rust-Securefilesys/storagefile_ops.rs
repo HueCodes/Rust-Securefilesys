@@ -2,8 +2,8 @@ use crate::encryptor::Encryptor;
 use crate::key_manager::KeyManager;
 use crate::metadata::FileMetadata;
 use anyhow::{Context, Result};
-use tokio::fs;
 use std::path::PathBuf;
+use tokio::fs;
 
 pub struct SecureFileOps {
     encryptor: Encryptor,
@@ -12,10 +12,10 @@ pub struct SecureFileOps {
 }
 
 impl SecureFileOps {
-    pub fn new(km: KeyManager) -> Self {
+    pub fn new(km: KeyManager, root: impl Into<PathBuf>) -> Self {
         Self {
             encryptor: Encryptor::new(km.cipher()),
-            root: PathBuf::from("storage"),
+            root: root.into(),
             compress: false,
         }
     }
@@ -40,7 +40,8 @@ impl SecureFileOps {
 
     pub async fn read_encrypted(&self, name: &str) -> Result<Vec<u8>> {
         let path = self.root.join(name);
-        let data = fs::read(&path).await
+        let data = fs::read(&path)
+            .await
             .with_context(|| format!("reading {:?}", &path))?;
         if self.compress {
             self.encryptor.decrypt_compressed(&data, None)

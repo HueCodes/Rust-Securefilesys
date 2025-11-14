@@ -1,8 +1,8 @@
 mod config;
 mod encryptor;
 mod key_manager;
-mod storagefile_ops;
 mod metadata;
+mod storagefile_ops;
 mod util;
 
 use anyhow::Result;
@@ -13,9 +13,10 @@ use storagefile_ops::SecureFileOps;
 async fn main() -> Result<()> {
     let cfg = config::Config::load("config.json")?;
     let km = KeyManager::new(&cfg)?;
-    let fs = SecureFileOps::new(km);
+    let fs = SecureFileOps::new(km, cfg.storage_dir.clone()).with_compression(true);
 
-    fs.write_encrypted("example.txt", b"Top secret data").await?;
+    fs.write_encrypted("example.txt", b"Top secret data")
+        .await?;
     let data = fs.read_encrypted("example.txt").await?;
 
     println!("Decrypted content: {}", String::from_utf8_lossy(&data));
