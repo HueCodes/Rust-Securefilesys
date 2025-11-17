@@ -2,7 +2,7 @@
 
 A production-ready, secure file storage system in Rust with military-grade encryption, optional compression, and zero-copy operations.
 
-## 🔒 Features
+## Features
 
 - **XChaCha20-Poly1305 AEAD Encryption** - Extended nonces, authenticated encryption for maximum security
 - **Optional Gzip Compression** - Reduce storage footprint before encryption
@@ -12,7 +12,7 @@ A production-ready, secure file storage system in Rust with military-grade encry
 - **Configurable Storage** - Flexible storage directory and key file paths
 - **Metadata Tracking** - Built-in file metadata support
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Installation
 
@@ -62,7 +62,7 @@ Create a `config.json` file:
 }
 ```
 
-## 🔑 Key Management
+## Key Management
 
 The `KeyManager` handles secure key generation and storage:
 
@@ -77,7 +77,7 @@ let km = KeyManager::new(&config)?;
 // Automatically cleaned from memory when km goes out of scope
 ```
 
-## 📦 Encryption
+## Encryption
 
 Uses **XChaCha20-Poly1305** for authenticated encryption:
 
@@ -103,7 +103,7 @@ fs.write_encrypted("file.txt", &data).await?;
 
 Data flow: `plaintext → encrypt → storage`
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────────────────┐
@@ -130,7 +130,7 @@ Data flow: `plaintext → encrypt → storage`
 └─────────────────────────────────────────┘
 ```
 
-## 🧪 Testing
+## Testing
 
 Run the test suite:
 
@@ -151,7 +151,7 @@ Integration tests verify:
 - **Memory footprint**: Minimal, keys are only 32 bytes
 - **Async I/O**: Non-blocking file operations scale with workload
 
-## 🛡️ Security
+## Security
 
 - **No encryption key in memory longer than needed**
 - **Nonces never reused** (24-byte XChaCha20 nonces)
@@ -186,7 +186,7 @@ cargo build --release
 cargo run --bin securefs
 ```
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! Please:
 
@@ -205,7 +205,7 @@ MIT License - see [LICENSE](LICENSE) for details
 - **Repository**: https://github.com/HueCodes/Rust-Lock
 - **Issues**: https://github.com/HueCodes/Rust-Lock/issues
 
-## ⚠️ Disclaimer
+## Disclaimer
 
 This is cryptographic software. While it uses industry-standard algorithms and best practices, it has not been independently audited. Use in production at your own risk.
 
